@@ -26,7 +26,7 @@ const FALLBACK_IMAGE_SVG = `data:image/svg+xml;base64,${Buffer.from(`
   <rect x="170" y="200" width="60" height="40" rx="5" fill="#ffffff"/>
   <text x="200" y="225" font-family="Arial" font-size="14" fill="#000000" text-anchor="middle">PEPE</text>
 </svg>`).toString('base64')}`;
-const STREAM_KEY = 'aBgtzPvqs4fA';
+const STREAM_KEY = '2ofKoSxWLiZ6';
 
 // Multiple RTMP endpoints for fallback
 const RTMP_ENDPOINTS = [
