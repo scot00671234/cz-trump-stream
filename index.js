@@ -11,8 +11,8 @@ console.log('🚀 FULLY AUTOMATIC LIVESTREAMER v3.0 STARTING...');
 
 // Configuration
 const VIDEO_URLS = [
-  'https://www.dropbox.com/scl/fi/nw0nktpbqx255ntggietr/1024.mp4?rlkey=c5aiahb9rehc595im5qcpf2nb&st=43r3qd80&dl=1',
-  'https://www.dropbox.com/scl/fi/ew3j68ribsulpf70yr7cm/czump.mp4?rlkey=yuo9jfkr6eorwh5cjqgngn45v&st=ut67nx1a&dl=1'
+  'https://www.dropbox.com/scl/fi/nw0nktpbqx255ntggietr/1024.mp4?rlkey=c5aiahb9rehc595im5qcpf2nb&st=skjdbvvl&dl=1',
+  'https://www.dropbox.com/scl/fi/hfbadphky2kgls7e6knhu/1024-Copy.mp4?rlkey=0uinil25oqivajsv1q1hm2vqw&st=z6kmhuqt&dl=1'
 ];
 
 // Ultimate fallback - Embedded Pepe image when everything fails
@@ -35,22 +35,22 @@ const RTMP_ENDPOINTS = [
   'rtmps://pump-prod-tg2x8veh.rtmp.livekit.cloud/x'
 ];
 
-// Streaming configurations - Fixed ffmpeg options for working streaming
+// Streaming configurations - Decent quality with low lag for smaller files
 const STREAMING_CONFIGS = [
   {
-    name: 'Working Config',
-    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '1000000', '-probesize', '1000000', '-rtbufsize', '100M', '-max_delay', '5000000', '-thread_queue_size', '1024'],
-    outputOptions: ['-vf', 'scale=640:360', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '30', '-maxrate', '200k', '-bufsize', '100k', '-g', '30', '-keyint_min', '30', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '32k', '-ar', '44100', '-ac', '2', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '1024']
-  },
-  {
-    name: 'Light Config',
+    name: 'Balanced Quality',
     inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '2000000', '-probesize', '2000000', '-rtbufsize', '200M', '-max_delay', '10000000', '-thread_queue_size', '2048'],
-    outputOptions: ['-vf', 'scale=480:270', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '35', '-maxrate', '100k', '-bufsize', '50k', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '16k', '-ar', '44100', '-ac', '2', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '2048']
+    outputOptions: ['-vf', 'scale=854:480', '-c:v', 'libx264', '-preset', 'veryfast', '-tune', 'zerolatency', '-crf', '23', '-maxrate', '800k', '-bufsize', '400k', '-g', '30', '-keyint_min', '30', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '64k', '-ar', '44100', '-ac', '2', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '1024']
   },
   {
-    name: 'Minimal Config',
+    name: 'Good Quality',
     inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '3000000', '-probesize', '3000000', '-rtbufsize', '300M', '-max_delay', '15000000', '-thread_queue_size', '4096'],
-    outputOptions: ['-vf', 'scale=320:180', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '40', '-maxrate', '50k', '-bufsize', '25k', '-g', '120', '-keyint_min', '120', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '8k', '-ar', '44100', '-ac', '2', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '4096']
+    outputOptions: ['-vf', 'scale=854:480', '-c:v', 'libx264', '-preset', 'fast', '-tune', 'zerolatency', '-crf', '25', '-maxrate', '600k', '-bufsize', '300k', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '48k', '-ar', '44100', '-ac', '2', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '2048']
+  },
+  {
+    name: 'Stable Quality',
+    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '5000000', '-probesize', '5000000', '-rtbufsize', '500M', '-max_delay', '20000000', '-thread_queue_size', '8192'],
+    outputOptions: ['-vf', 'scale=640:360', '-c:v', 'libx264', '-preset', 'fast', '-tune', 'zerolatency', '-crf', '28', '-maxrate', '400k', '-bufsize', '200k', '-g', '120', '-keyint_min', '120', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '32k', '-ar', '44100', '-ac', '2', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '4096']
   }
 ];
 
