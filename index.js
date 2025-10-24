@@ -35,22 +35,22 @@ const RTMP_ENDPOINTS = [
   'rtmps://pump-prod-tg2x8veh.rtmp.livekit.cloud/x'
 ];
 
-// Streaming configurations - Ultra stable for complete video playback
+// Streaming configurations - Force complete video playback
 const STREAMING_CONFIGS = [
   {
-    name: 'Ultra Stable',
-    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '200000', '-probesize', '200000', '-rtbufsize', '200M', '-max_delay', '5000000', '-thread_queue_size', '512'],
-    outputOptions: ['-vf', 'scale=640:360', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '35', '-maxrate', '200k', '-bufsize', '100k', '-g', '30', '-keyint_min', '30', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '32k', '-ar', '22050', '-ac', '1', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero']
+    name: 'Force Complete',
+    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '100000', '-probesize', '100000', '-rtbufsize', '1000M', '-max_delay', '20000000', '-thread_queue_size', '4096', '-max_muxing_queue_size', '1024'],
+    outputOptions: ['-vf', 'scale=480:270', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '45', '-maxrate', '100k', '-bufsize', '50k', '-g', '30', '-keyint_min', '30', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '16k', '-ar', '22050', '-ac', '1', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '1024']
   },
   {
-    name: 'Super Light',
-    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '500000', '-probesize', '500000', '-rtbufsize', '300M', '-max_delay', '10000000', '-thread_queue_size', '1024'],
-    outputOptions: ['-vf', 'scale=640:360', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '38', '-maxrate', '150k', '-bufsize', '75k', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '24k', '-ar', '22050', '-ac', '1', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero']
+    name: 'Ultra Minimal',
+    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '50000', '-probesize', '50000', '-rtbufsize', '2000M', '-max_delay', '30000000', '-thread_queue_size', '8192', '-max_muxing_queue_size', '2048'],
+    outputOptions: ['-vf', 'scale=480:270', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '50', '-maxrate', '50k', '-bufsize', '25k', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '8k', '-ar', '22050', '-ac', '1', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '2048']
   },
   {
-    name: 'Minimal Stable',
-    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '1000000', '-probesize', '1000000', '-rtbufsize', '500M', '-max_delay', '15000000', '-thread_queue_size', '2048'],
-    outputOptions: ['-vf', 'scale=640:360', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '40', '-maxrate', '100k', '-bufsize', '50k', '-g', '120', '-keyint_min', '120', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '16k', '-ar', '22050', '-ac', '1', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero']
+    name: 'Absolute Minimal',
+    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '10000', '-probesize', '10000', '-rtbufsize', '5000M', '-max_delay', '60000000', '-thread_queue_size', '16384', '-max_muxing_queue_size', '4096'],
+    outputOptions: ['-vf', 'scale=320:180', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '55', '-maxrate', '25k', '-bufsize', '12k', '-g', '120', '-keyint_min', '120', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '4k', '-ar', '22050', '-ac', '1', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '4096']
   }
 ];
 
@@ -120,11 +120,11 @@ async function preloadVideo(videoUrl, videoIndex) {
     }, PRELOAD_TIMEOUT);
 
     try {
-      // Use ffprobe to analyze and preload the video
+      // Use ffmpeg to analyze and preload the video with proper output
       preloadProcess = ffmpeg()
         .input(videoUrl)
         .inputOptions(['-analyzeduration', '5000000', '-probesize', '5000000'])
-        .outputOptions(['-f', 'null', '-']) // Null output, just processing
+        .outputOptions(['-f', 'null', '-', '-v', 'quiet']) // Null output with quiet mode
         .on('start', (commandLine) => {
           console.log('🚀 Preload started for video ' + (videoIndex + 1));
         })
@@ -202,12 +202,12 @@ function startHealthMonitoring() {
   healthCheckInterval = setInterval(() => {
     if (isStreaming) {
       const timeSinceLastActivity = Date.now() - lastStreamActivity;
-      if (timeSinceLastActivity > 300000) { // Increased timeout to 5 minutes for processing
+      if (timeSinceLastActivity > 600000) { // Increased timeout to 10 minutes for processing
         console.log('Stream timeout detected - restarting...');
         restartStream();
       }
     }
-  }, 30000); // Check every 30 seconds
+  }, 60000); // Check every 60 seconds
 }
 
 function stopHealthMonitoring() {
