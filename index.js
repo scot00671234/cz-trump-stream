@@ -35,22 +35,22 @@ const RTMP_ENDPOINTS = [
   'rtmps://pump-prod-tg2x8veh.rtmp.livekit.cloud/x'
 ];
 
-// Streaming configurations - Force complete video playback
+// Streaming configurations - Fixed ffmpeg options for working streaming
 const STREAMING_CONFIGS = [
   {
-    name: 'Force Complete',
-    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '100000', '-probesize', '100000', '-rtbufsize', '1000M', '-max_delay', '20000000', '-thread_queue_size', '4096', '-max_muxing_queue_size', '1024'],
-    outputOptions: ['-vf', 'scale=480:270', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '45', '-maxrate', '100k', '-bufsize', '50k', '-g', '30', '-keyint_min', '30', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '16k', '-ar', '22050', '-ac', '1', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '1024']
+    name: 'Working Config',
+    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '1000000', '-probesize', '1000000', '-rtbufsize', '100M', '-max_delay', '5000000', '-thread_queue_size', '1024'],
+    outputOptions: ['-vf', 'scale=640:360', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '30', '-maxrate', '200k', '-bufsize', '100k', '-g', '30', '-keyint_min', '30', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '32k', '-ar', '44100', '-ac', '2', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '1024']
   },
   {
-    name: 'Ultra Minimal',
-    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '50000', '-probesize', '50000', '-rtbufsize', '2000M', '-max_delay', '30000000', '-thread_queue_size', '8192', '-max_muxing_queue_size', '2048'],
-    outputOptions: ['-vf', 'scale=480:270', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '50', '-maxrate', '50k', '-bufsize', '25k', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '8k', '-ar', '22050', '-ac', '1', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '2048']
+    name: 'Light Config',
+    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '2000000', '-probesize', '2000000', '-rtbufsize', '200M', '-max_delay', '10000000', '-thread_queue_size', '2048'],
+    outputOptions: ['-vf', 'scale=480:270', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '35', '-maxrate', '100k', '-bufsize', '50k', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '16k', '-ar', '44100', '-ac', '2', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '2048']
   },
   {
-    name: 'Absolute Minimal',
-    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '10000', '-probesize', '10000', '-rtbufsize', '5000M', '-max_delay', '60000000', '-thread_queue_size', '16384', '-max_muxing_queue_size', '4096'],
-    outputOptions: ['-vf', 'scale=320:180', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '55', '-maxrate', '25k', '-bufsize', '12k', '-g', '120', '-keyint_min', '120', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '4k', '-ar', '22050', '-ac', '1', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '4096']
+    name: 'Minimal Config',
+    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '3000000', '-probesize', '3000000', '-rtbufsize', '300M', '-max_delay', '15000000', '-thread_queue_size', '4096'],
+    outputOptions: ['-vf', 'scale=320:180', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '40', '-maxrate', '50k', '-bufsize', '25k', '-g', '120', '-keyint_min', '120', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '8k', '-ar', '44100', '-ac', '2', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '4096']
   }
 ];
 
@@ -287,7 +287,7 @@ function startTransitionFallback() {
     streamProcess = ffmpeg()
       .input(FALLBACK_IMAGE_SVG)
       .inputOptions(['-loop', '1', '-r', '1', '-t', Math.floor(TRANSITION_DURATION / 1000)]) // Short duration for transition
-      .outputOptions(['-vf', 'scale=1280:720', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'stillimage', '-crf', '30', '-maxrate', '500k', '-bufsize', '500k', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '32k', '-ar', '44100', '-ac', '2', '-f', 'flv'])
+      .outputOptions(['-vf', 'scale=640:360', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'stillimage', '-crf', '30', '-maxrate', '200k', '-bufsize', '100k', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '32k', '-ar', '44100', '-ac', '2', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '1024'])
       .output(rtmpUrl)
       .on('start', (commandLine) => {
         console.log('✅ Transition fallback started');
@@ -374,7 +374,7 @@ function startFallbackStream() {
     streamProcess = ffmpeg()
       .input(FALLBACK_IMAGE_SVG)
       .inputOptions(['-loop', '1', '-r', '1', '-t', '3600']) // Loop image for 1 hour
-      .outputOptions(['-vf', 'scale=1280:720', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'stillimage', '-crf', '30', '-maxrate', '500k', '-bufsize', '500k', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '32k', '-ar', '44100', '-ac', '2', '-f', 'flv'])
+      .outputOptions(['-vf', 'scale=640:360', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'stillimage', '-crf', '30', '-maxrate', '200k', '-bufsize', '100k', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '32k', '-ar', '44100', '-ac', '2', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '1024'])
       .output(rtmpUrl)
       .on('start', (commandLine) => {
         console.log('✅ Fallback stream started successfully');
