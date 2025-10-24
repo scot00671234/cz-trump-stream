@@ -35,22 +35,22 @@ const RTMP_ENDPOINTS = [
   'rtmps://pump-prod-tg2x8veh.rtmp.livekit.cloud/x'
 ];
 
-// Streaming configurations - Optimized for lightweight processing and reliability
+// Streaming configurations - Ultra stable for complete video playback
 const STREAMING_CONFIGS = [
   {
-    name: 'Ultra Light',
-    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '500000', '-probesize', '500000', '-rtbufsize', '50M'],
-    outputOptions: ['-vf', 'scale=854:480', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '28', '-maxrate', '500k', '-bufsize', '250k', '-g', '30', '-keyint_min', '30', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '64k', '-ar', '44100', '-ac', '2', '-f', 'flv']
+    name: 'Ultra Stable',
+    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '200000', '-probesize', '200000', '-rtbufsize', '200M', '-max_delay', '5000000', '-thread_queue_size', '512'],
+    outputOptions: ['-vf', 'scale=640:360', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '35', '-maxrate', '200k', '-bufsize', '100k', '-g', '30', '-keyint_min', '30', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '32k', '-ar', '22050', '-ac', '1', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero']
   },
   {
-    name: 'Light Performance',
-    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '1000000', '-probesize', '1000000', '-rtbufsize', '100M'],
-    outputOptions: ['-vf', 'scale=854:480', '-c:v', 'libx264', '-preset', 'veryfast', '-tune', 'zerolatency', '-crf', '30', '-maxrate', '400k', '-bufsize', '200k', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '48k', '-ar', '44100', '-ac', '2', '-f', 'flv']
+    name: 'Super Light',
+    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '500000', '-probesize', '500000', '-rtbufsize', '300M', '-max_delay', '10000000', '-thread_queue_size', '1024'],
+    outputOptions: ['-vf', 'scale=640:360', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '38', '-maxrate', '150k', '-bufsize', '75k', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '24k', '-ar', '22050', '-ac', '1', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero']
   },
   {
-    name: 'Stable Light',
-    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '1500000', '-probesize', '1500000', '-rtbufsize', '150M'],
-    outputOptions: ['-vf', 'scale=854:480', '-c:v', 'libx264', '-preset', 'fast', '-tune', 'zerolatency', '-crf', '32', '-maxrate', '300k', '-bufsize', '150k', '-g', '120', '-keyint_min', '120', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '32k', '-ar', '44100', '-ac', '2', '-f', 'flv']
+    name: 'Minimal Stable',
+    inputOptions: ['-re', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-analyzeduration', '1000000', '-probesize', '1000000', '-rtbufsize', '500M', '-max_delay', '15000000', '-thread_queue_size', '2048'],
+    outputOptions: ['-vf', 'scale=640:360', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '40', '-maxrate', '100k', '-bufsize', '50k', '-g', '120', '-keyint_min', '120', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '16k', '-ar', '22050', '-ac', '1', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero']
   }
 ];
 
@@ -61,7 +61,7 @@ let currentEndpointIndex = 0;
 let currentConfigIndex = 0;
 let currentVideoIndex = 0;
 let restartAttempts = 0;
-const MAX_RESTART_ATTEMPTS = 10;
+const MAX_RESTART_ATTEMPTS = 3;
 let healthCheckInterval = null;
 let videoRotationInterval = null;
 let lastStreamActivity = Date.now();
@@ -97,12 +97,12 @@ function startHealthMonitoring() {
   healthCheckInterval = setInterval(() => {
     if (isStreaming) {
       const timeSinceLastActivity = Date.now() - lastStreamActivity;
-      if (timeSinceLastActivity > 120000) { // Increased timeout to 2 minutes for processing
+      if (timeSinceLastActivity > 300000) { // Increased timeout to 5 minutes for processing
         console.log('Stream timeout detected - restarting...');
         restartStream();
       }
     }
-  }, 15000); // Check every 15 seconds
+  }, 30000); // Check every 30 seconds
 }
 
 function stopHealthMonitoring() {
