@@ -67,6 +67,11 @@ let videoRotationInterval = null;
 let lastStreamActivity = Date.now();
 const VIDEO_ROTATION_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
 
+// Pre-loading system
+let preloadedVideos = new Map();
+let isPreloading = false;
+const PRELOAD_TIMEOUT = 300000; // 5 minutes max preload time
+
 // Fallback mode variables
 let isFallbackMode = false;
 let fallbackAttempts = 0;
@@ -86,6 +91,106 @@ function validateVideoUrl(url) {
     return false;
   }
   return true;
+}
+
+// Pre-load video function - downloads and processes video for instant streaming
+async function preloadVideo(videoUrl, videoIndex) {
+  if (preloadedVideos.has(videoIndex)) {
+    console.log('✅ Video ' + (videoIndex + 1) + ' already preloaded');
+    return true;
+  }
+
+  console.log('🔄 PRELOADING Video ' + (videoIndex + 1) + ' for instant streaming...');
+  console.log('URL: ' + videoUrl);
+  
+  return new Promise((resolve) => {
+    const startTime = Date.now();
+    let preloadProcess = null;
+    let isResolved = false;
+    
+    const timeout = setTimeout(() => {
+      if (!isResolved) {
+        isResolved = true;
+        console.log('⏰ Preload timeout for video ' + (videoIndex + 1));
+        if (preloadProcess) {
+          preloadProcess.kill('SIGTERM');
+        }
+        resolve(false);
+      }
+    }, PRELOAD_TIMEOUT);
+
+    try {
+      // Use ffprobe to analyze and preload the video
+      preloadProcess = ffmpeg()
+        .input(videoUrl)
+        .inputOptions(['-analyzeduration', '5000000', '-probesize', '5000000'])
+        .outputOptions(['-f', 'null', '-']) // Null output, just processing
+        .on('start', (commandLine) => {
+          console.log('🚀 Preload started for video ' + (videoIndex + 1));
+        })
+        .on('progress', (progress) => {
+          const elapsed = Date.now() - startTime;
+          console.log('📥 Preloading: ' + Math.round(progress.percent || 0) + '% done (' + Math.round(elapsed/1000) + 's)');
+        })
+        .on('end', () => {
+          if (!isResolved) {
+            isResolved = true;
+            clearTimeout(timeout);
+            const elapsed = Date.now() - startTime;
+            console.log('✅ Video ' + (videoIndex + 1) + ' preloaded successfully in ' + Math.round(elapsed/1000) + 's');
+            preloadedVideos.set(videoIndex, {
+              url: videoUrl,
+              preloaded: true,
+              timestamp: Date.now()
+            });
+            resolve(true);
+          }
+        })
+        .on('error', (err) => {
+          if (!isResolved) {
+            isResolved = true;
+            clearTimeout(timeout);
+            console.log('❌ Preload failed for video ' + (videoIndex + 1) + ': ' + err.message);
+            resolve(false);
+          }
+        });
+
+      preloadProcess.run();
+      
+    } catch (error) {
+      if (!isResolved) {
+        isResolved = true;
+        clearTimeout(timeout);
+        console.log('❌ Preload error for video ' + (videoIndex + 1) + ': ' + error.message);
+        resolve(false);
+      }
+    }
+  });
+}
+
+// Pre-load all videos function
+async function preloadAllVideos() {
+  if (isPreloading) {
+    console.log('⚠️ Preloading already in progress');
+    return;
+  }
+  
+  isPreloading = true;
+  console.log('🔄 PRELOADING ALL VIDEOS FOR INSTANT STREAMING...');
+  
+  const preloadPromises = VIDEO_URLS.map((url, index) => preloadVideo(url, index));
+  
+  try {
+    const results = await Promise.all(preloadPromises);
+    const successCount = results.filter(r => r).length;
+    console.log('✅ Preloading complete: ' + successCount + '/' + VIDEO_URLS.length + ' videos ready');
+    isPreloading = false;
+    return successCount > 0;
+  } catch (error) {
+    console.log('❌ Preloading failed: ' + error.message);
+    isPreloading = false;
+    return false;
+  }
 }
 
 // Stream health monitoring
@@ -361,6 +466,9 @@ function startStream() {
     const rtmpUrl = endpoint + '/' + STREAM_KEY;
     const currentVideoUrl = VIDEO_URLS[currentVideoIndex];
     
+    // Check if video is preloaded
+    const isPreloaded = preloadedVideos.has(currentVideoIndex);
+    
     // Validate video URL
     if (!validateVideoUrl(currentVideoUrl)) {
       console.log('⚠️ Video URL validation failed, rotating to next video...');
@@ -372,6 +480,7 @@ function startStream() {
     console.log('   Config: ' + config.name);
     console.log('   Endpoint: ' + endpoint);
     console.log('   Video: ' + (currentVideoIndex + 1) + '/' + VIDEO_URLS.length);
+    console.log('   Preloaded: ' + (isPreloaded ? '✅ YES' : '❌ NO'));
     console.log('   URL: ' + currentVideoUrl);
     
     streamProcess = ffmpeg()
@@ -600,11 +709,22 @@ app.listen(PORT, () => {
   console.log('=== FULLY AUTOMATIC LIVESTREAMER v3.0 ===');
   console.log('Server running on port ' + PORT);
   console.log('Status page: http://localhost:' + PORT + '/');
-  console.log('🚀 AUTO-STARTING STREAM IN 3 SECONDS...');
+  console.log('🚀 PRELOADING VIDEOS FOR INSTANT STREAMING...');
   
-  // Auto-start stream on deployment
-  setTimeout(() => {
-    console.log('🎥 AUTO-STARTING STREAM NOW...');
-    startStream();
-  }, 3000);
+  // Preload all videos first, then start streaming
+  preloadAllVideos().then((success) => {
+    if (success) {
+      console.log('✅ PRELOADING COMPLETE - STARTING STREAM...');
+      setTimeout(() => {
+        console.log('🎥 AUTO-STARTING STREAM NOW...');
+        startStream();
+      }, 2000);
+    } else {
+      console.log('⚠️ PRELOADING FAILED - STARTING STREAM ANYWAY...');
+      setTimeout(() => {
+        console.log('🎥 AUTO-STARTING STREAM NOW...');
+        startStream();
+      }, 5000);
+    }
+  });
 });
