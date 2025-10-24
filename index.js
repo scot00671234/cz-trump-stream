@@ -287,7 +287,8 @@ function startTransitionFallback() {
     streamProcess = ffmpeg()
       .input(FALLBACK_IMAGE_SVG)
       .inputOptions(['-loop', '1', '-r', '1', '-t', Math.floor(TRANSITION_DURATION / 1000)]) // Short duration for transition
-      .outputOptions(['-vf', 'scale=640:360', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'stillimage', '-crf', '30', '-maxrate', '200k', '-bufsize', '100k', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '32k', '-ar', '44100', '-ac', '2', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '1024'])
+      .outputOptions(['-vf', 'scale=640:360', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'stillimage', '-crf', '30', '-maxrate', '200k', '-bufsize', '100k', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '32k', '-ar', '44100', '-ac', '2', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero'])
+      .addOption('-max_muxing_queue_size', '1024')
       .output(rtmpUrl)
       .on('start', (commandLine) => {
         console.log('✅ Transition fallback started');
@@ -374,7 +375,8 @@ function startFallbackStream() {
     streamProcess = ffmpeg()
       .input(FALLBACK_IMAGE_SVG)
       .inputOptions(['-loop', '1', '-r', '1', '-t', '3600']) // Loop image for 1 hour
-      .outputOptions(['-vf', 'scale=640:360', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'stillimage', '-crf', '30', '-maxrate', '200k', '-bufsize', '100k', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '32k', '-ar', '44100', '-ac', '2', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero', '-max_muxing_queue_size', '1024'])
+      .outputOptions(['-vf', 'scale=640:360', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'stillimage', '-crf', '30', '-maxrate', '200k', '-bufsize', '100k', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0', '-c:a', 'aac', '-b:a', '32k', '-ar', '44100', '-ac', '2', '-f', 'flv', '-fflags', '+genpts', '-avoid_negative_ts', 'make_zero'])
+      .addOption('-max_muxing_queue_size', '1024')
       .output(rtmpUrl)
       .on('start', (commandLine) => {
         console.log('✅ Fallback stream started successfully');
